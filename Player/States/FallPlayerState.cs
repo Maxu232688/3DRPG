@@ -1,6 +1,4 @@
-using System.Numerics;
-
-public class BrakePlayerState : PlayerState
+public class FallPlayerState : PlayerState
 {
     protected override void OnEnter(Player player) { }
 
@@ -9,10 +7,10 @@ public class BrakePlayerState : PlayerState
     // ReSharper disable Unity.PerformanceAnalysis
     protected override void OnStep(Player player)
     {
-        player.Fall();
-        player.Decelerate();
+        player.Gravity();
+        player.FaceDirectionSmooth(player.lateralVelocity);
 
-        if (player.lateralVelocity.sqrMagnitude == 0)
+        if (player.isGrounded)
         {
             player.states.Change<IdlePlayerState>();
         }
