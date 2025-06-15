@@ -9,6 +9,7 @@ public class BrakePlayerState : PlayerState
     // ReSharper disable Unity.PerformanceAnalysis
     protected override void OnStep(Player player)
     {
+        player.Jump();
         player.Fall();
         player.Decelerate();
 

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public abstract class Entity : MonoBehaviour
 {
+    public EntityEvents entityEvents;
     public float turningDragMultiplier { get; protected set; } = 1f;
     public float topSpeedMultiplier { get; protected set; } = 1f;
     public float acclerationMultiplier { get; protected set; } = 1f;
@@ -14,6 +15,7 @@ public abstract class Entity : MonoBehaviour
     public Vector3 Velocity { get; protected set; }
     public CharacterController controller { get; protected set; }
     public readonly float m_groundOffset = 0.1f;
+    public RaycastHit groundHit;
 
     public Vector3 lateralVelocity
     {
@@ -39,6 +41,9 @@ public abstract class Entity : MonoBehaviour
         var castDistance = Mathf.Abs(distance - radius);
         return Physics.SphereCast(position, radius, direction, out hit, castDistance, layer, queryTriggerInteraction);
     }
+
+    public Vector3 stepPosition => position - transform.up * (height * 0.5f - controller.stepOffset);
+    public virtual bool IsPointUnderStep(Vector3 point)=> stepPosition.y > point.y;
 }
 
 public abstract class Entity<T> : Entity where T : Entity<T>
@@ -86,7 +91,14 @@ public abstract class Entity<T> : Entity where T : Entity<T>
         {
             if (!isGrounded)
             {
-                
+                if (EvaluateLanding(hit))
+                {
+                    EnterGround(hit);
+                }
+                else
+                {
+                    HandleHighLedge(hit);
+                }
             }
         }
         else
@@ -145,6 +157,16 @@ public abstract class Entity<T> : Entity where T : Entity<T>
         lateralVelocity = Vector3.MoveTowards(lateralVelocity, Vector3.zero, delta);
     }
 
+    protected virtual void EnterGround(RaycastHit hit)
+    {
+        if (!isGrounded)
+        {
+            groundHit = hit;
+            isGrounded = true;
+            entityEvents.OnGroundEnter?.Invoke();
+        }
+    }
+    
     protected virtual void ExitGround()
     {
         if (isGrounded)
@@ -153,6 +175,17 @@ public abstract class Entity<T> : Entity where T : Entity<T>
             transform.parent = null;
             lastGroundTime = Time.time;
             verticalVelocity = Vector3.Max(verticalVelocity, Vector3.zero);
+            entityEvents.OnGroundExit?.Invoke();
         }
+    }
+
+    protected virtual bool EvaluateLanding(RaycastHit hit)
+    {
+       return IsPointUnderStep(hit.point) && Vector3.Angle(hit.normal, Vector3.up) < controller.slopeLimit;
+    }
+    
+    protected virtual void HandleHighLedge(RaycastHit hit)
+    {
+        // 空着先不写
     }
 }

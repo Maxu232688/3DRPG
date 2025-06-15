@@ -21,4 +21,10 @@ public class PlayerStats : EntityStats<PlayerStats>
     public float runningAcceleration = 16f;
     public float runningTopSpeed = 7.5f;
     public float runningTurningDrag = 14f;
+    
+    [Header("Jump Stats")]
+    public int multiJumps = 1;
+    public float coyoteJumpThreshold = 0.15f;//土狼时间
+    public float maxJumpHeight = 17f;
+    public float minJumpHeight = 10f;
 }

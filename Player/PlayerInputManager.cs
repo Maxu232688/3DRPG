@@ -8,8 +8,11 @@ public class PlayerInputManager : MonoBehaviour
 {
     public InputActionAsset  actions;
     protected float movementDirectionUnlockTime;
+    protected float? m_lasetJumpTime;
+    protected const float k_jumpBuffer = 0.15f;
     protected InputAction m_movement;
     protected InputAction m_run;
+    protected InputAction m_jump;
     protected Camera m_camera;
 
     protected virtual void Awake() => CacheActions();
@@ -24,7 +27,10 @@ public class PlayerInputManager : MonoBehaviour
     // Update is called once per frame
     protected virtual void Update()
     {
-        
+        if (m_jump.WasPressedThisFrame())
+        {
+            m_lasetJumpTime = Time.time;
+        }
     }
 
     protected void OnEnable()
@@ -41,10 +47,11 @@ public class PlayerInputManager : MonoBehaviour
     {
         m_movement = actions["Movement"];
         m_run = actions["Run"];
+        m_jump = actions["Jump"];
     }
 
     public virtual bool GetRun() => m_run.IsPressed();
-
+    
     public virtual Vector3 GetMovementDirection()
     {
         if(Time.time < movementDirectionUnlockTime) return Vector3.zero;
@@ -75,4 +82,16 @@ public class PlayerInputManager : MonoBehaviour
         }
         return direction;
     }
+    
+    public virtual bool GetJumpDown()
+    {
+        if (m_lasetJumpTime != null && Time.time - m_lasetJumpTime >= k_jumpBuffer)
+        {
+            m_lasetJumpTime = null;
+            return true;
+        }
+        return false;
+    }
+
+    public virtual bool GetJumpUp() => m_jump.WasReleasedThisFrame();
 }
