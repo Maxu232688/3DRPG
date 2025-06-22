@@ -15,6 +15,9 @@ public abstract class Entity : MonoBehaviour
     public Vector3 Velocity { get; protected set; }
     public CharacterController controller { get; protected set; }
     public readonly float m_groundOffset = 0.1f;
+    public float originalHeight { get; protected set; }
+    public Vector3 unsizePosition => position - transform.up * height * 0.5f + transform.up * originalHeight * 0.5f;
+    
     public RaycastHit groundHit;
 
     public Vector3 lateralVelocity
@@ -65,6 +68,7 @@ public abstract class Entity<T> : Entity where T : Entity<T>
 
         controller.skinWidth = 0.005f;
         controller.minMoveDistance = 0;
+        originalHeight = controller.height;
     }
 
     protected virtual void Awake()
